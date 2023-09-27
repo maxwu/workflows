@@ -1,0 +1,28 @@
+name: Build Image
+on:
+  workflow_call:
+    inputs:
+      pr_comment_id:
+        type: string
+        required: false
+        default: "8888"
+      branch_name:
+        type: string
+        required: false
+        default: "main"
+
+jobs:
+  build-image:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: View context attributes
+        uses: actions/github-script@v6
+        with:
+          script: console.log(context)
+    
+      - name: build
+        env:
+          BRANCH_NAME: ${{ inputs.branch_name }}
+          PR_COMMENT_ID: ${{ inputs.pr_comment_id }}
+        run: |
+          echo "Build Image for branch: ${BRANCH_NAME}, triggered on PR comment ID: ${PR_COMMENT_ID}"\

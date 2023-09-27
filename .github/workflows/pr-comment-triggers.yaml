@@ -1,0 +1,49 @@
+name: PR Comment Triggers
+
+on:
+  issue_comment:                                     
+    types:
+      # comment-deleted event is not in init scope 
+      - created
+
+jobs:
+  context-job:
+    runs-on: [unbuntu-latest]
+    outputs:
+      branch: ${{ steps.get-branch.outputs.branch }}
+    steps:
+      - name: View context attributes
+        uses: actions/github-script@v6
+        with:
+          script: console.log(context)
+
+      - name: Show Hints
+        run: |
+          echo "The test WF is running since PR comemnt trigger only works on the default branch"'
+
+      - name: Get PR Branch Name
+        id: get-branch
+        run: |
+          PR=$(curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" ${{ github.event.issue.pull_request.url }})
+          echo "::set-output name=branch::$(echo $PR | jq -r '.head.ref')"
+        
+  call-build-image:
+    if: |
+      github.event_name == 'pull_request' && (
+        contains(github.event.comment.body, '/build-image') ||
+        contains(github.event.comment.body, '/test-workflow')
+      )
+    needs: context-job
+    uses: ./.github/workflows/build-image.yaml
+    with:
+      pr_comment_id: ${{ github.event.issue.id }}
+      branch_name: ${{ needs.context-job.outputs.branch }}
+  
+  call-test-workflow:
+    if: | 
+      github.event_name == 'pull_request' && contains(github.event.comment.body, '/test-workflow')
+    needs: [ context-job, call-build-image]
+    uses: ./.github/workflows/test-workflow.yaml
+    with:
+      pr_comment_id: ${{ github.event.issue.id }}
+      branch_name: ${{ needs.context-job.outputs.branch }}
