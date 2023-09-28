@@ -28,8 +28,9 @@ jobs:
           echo "::set-output name=branch::$(echo $PR | jq -r '.head.ref')"
         
   call-build-image:
+    # Call build-image if the comment is on PR and the comment contains either cmd
     if: |
-      github.event_name == 'pull_request' && (
+      github.event.issue.pull_request && (
         contains(github.event.comment.body, '/build-image') ||
         contains(github.event.comment.body, '/test-workflow')
       )
@@ -41,7 +42,7 @@ jobs:
   
   call-test-workflow:
     if: | 
-      github.event_name == 'pull_request' && contains(github.event.comment.body, '/test-workflow')
+      github.event.issue.pull_request && contains(github.event.comment.body, '/test-workflow')
     needs: [ context-job, call-build-image]
     uses: ./.github/workflows/test-workflow.yaml
     with:
