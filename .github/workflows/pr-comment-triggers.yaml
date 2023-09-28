@@ -8,7 +8,7 @@ on:
 
 jobs:
   context-job:
-    runs-on: [unbuntu-latest]
+    runs-on: [ubuntu-latest]
     outputs:
       branch: ${{ steps.get-branch.outputs.branch }}
     steps:
