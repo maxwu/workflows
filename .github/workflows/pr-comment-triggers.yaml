@@ -19,7 +19,7 @@ jobs:
 
       - name: Show Hints
         run: |
-          echo "The test WF is running since PR comemnt trigger only works on the default branch"'
+          echo "The test WF is running since PR comemnt trigger only works on the default branch"
 
       - name: Get PR Branch Name
         id: get-branch
