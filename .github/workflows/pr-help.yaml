@@ -1,0 +1,42 @@
+name: "PR Help"
+
+on:
+  pull_request:
+    types:
+      - opened
+      # For testing only, this type will be removed when merging to main branch or later
+      - synchronize
+
+jobs:
+  context:
+    runs-on: [ubuntu-latest]
+    steps:
+      - name: View context attributes
+        uses: actions/github-script@v6
+        with:
+          script: console.log(context)
+    
+      - name: Show PR Help
+        uses: actions/github-script@v6
+        if: ${{ github.event_name == 'pull_request' }}
+        env:
+          HELP: |
+            <details>
+              <summary><h3>🐙 Useful Commands</h3></summary>
+              Additional actions to run by adding the following comments on the PR per PR label suggestion.
+              <br>
+              <table>
+                <tr><td><code>  /build-image     </code></td><td> 🐳 Builds the test image             </td></tr>
+                <tr><td><code>  /one-off-tests   </code></td><td> 🧪 Run Resilience Tests on Alpha     </td></tr>
+                <tr><td><code>  /blackoak-tests  </code></td><td> 🧪 Run Resilience Tests on Black-Oak </td></tr>
+              </table>
+            </details>
+        with:
+          script: |
+            const { HELP } = process.env
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `${HELP}`
+            })
